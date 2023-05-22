@@ -12,6 +12,8 @@ OneButton btn = OneButton(
   true         // Enable internal pull-up resistor
 );
 
+#define sliderPin 32
+
 void PlayPause()
 {
   Serial.println("Sending Play/Pause media key...");
@@ -30,6 +32,18 @@ void PreviousTrack()
   bleKeyboard.write(KEY_MEDIA_PREVIOUS_TRACK);
 }
 
+void VolumeUp()
+{
+  Serial.println("Sending Volume Up media key...");
+  bleKeyboard.write(KEY_MEDIA_VOLUME_UP);
+}
+
+void VolumeDown()
+{
+  Serial.println("Sending Volume Down media key...");
+  bleKeyboard.write(KEY_MEDIA_VOLUME_DOWN);
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -38,6 +52,7 @@ void setup()
   btn.attachClick(PlayPause);
   btn.attachDoubleClick(NextTrack);
   btn.attachLongPressStart(PreviousTrack);
+  pinMode(sliderPin, INPUT);
 }
 
 void loop()
@@ -45,5 +60,6 @@ void loop()
   if (bleKeyboard.isConnected())
   {
     btn.tick(); // check the status of the button
+    Serial.println(analogRead(sliderPin));
   }
 }
