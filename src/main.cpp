@@ -13,6 +13,10 @@ OneButton btn = OneButton(
 );
 
 #define sliderPin 32
+int StartingVal = 0;
+int TopPos = 0;
+int BottomPos = 0;
+bool slideInitiated = false;
 
 void PlayPause()
 {
@@ -60,6 +64,31 @@ void loop()
   if (bleKeyboard.isConnected())
   {
     btn.tick(); // check the status of the button
-    Serial.println(analogRead(sliderPin));
+    if (analogRead(sliderPin) > 0 && !slideInitiated)
+    {
+      slideInitiated = true;
+      StartingVal = analogRead(sliderPin);
+      TopPos = StartingVal + 1500;
+      BottomPos = StartingVal - 1500;
+      Serial.println("StartingVal: " + String(StartingVal));
+      Serial.println("TopPos: " + String(TopPos));
+      Serial.println("beep boop" + analogRead(sliderPin));
+      if (analogRead(sliderPin) > TopPos){
+        Serial.println("hepl");
+        VolumeUp();
+        StartingVal = 0;
+        TopPos = 0;
+        BottomPos = 0;
+        slideInitiated = false;
+      }
+      if (analogRead(sliderPin) < BottomPos){
+        Serial.println("hepl");
+        VolumeUp();
+        StartingVal = 0;
+        TopPos = 0;
+        BottomPos = 0;
+        slideInitiated = false;
+      }
+    } //wait shut up okay so once it's higher than 0 set the starting position and then set the end position to sometithing plus the starting posution, vice versa for volume down
   }
 }
