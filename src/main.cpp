@@ -52,6 +52,7 @@ void VolumeDown()
   bleKeyboard.write(KEY_MEDIA_VOLUME_DOWN);
 }
 
+
 void setup()
 {
   Serial.begin(115200);
@@ -63,16 +64,32 @@ void setup()
   pinMode(sliderPin, INPUT);
 }
 
+int previousValue = 0;
+
 void loop()
 {
   if (bleKeyboard.isConnected())
   {
     btn.tick();                                             // check the status of the button
-    int softpotReading = analogRead(sliderPin); //current reading
-  if ((softpotReading - previousReading) > threshold) { //if the reading increased by more than the threshold
-    Serial.println("Swipe up detected!");
+   int softpotValue = analogRead(sliderPin);
+
+  // Calculate the difference from the previous value
+  int diff = softpotValue - previousValue;
+
+  // Check if the difference exceeds the threshold
+  if (diff >= threshold) {
+    // Call the function when the threshold is reached
+    VolumeDown();
+    // Update the previous value
+    previousValue = softpotValue;
   }
-  previousReading = softpotReading; //update previous reading
-  delay(100); //just here to slow down the output for easier reading
-  }
+
+  // Print the softpot value for debugging
+  Serial.println(softpotValue);
+
+  // Delay for stability (adjust as needed)
+  delay(100);
 }
+}
+
+
