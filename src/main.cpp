@@ -3,13 +3,13 @@
 #include <OneButton.h>
 
 BleKeyboard bleKeyboard;
-#define buttonPin 15 // the number of the pushbutton pin
-bool buttonState = false; // variable to hold the button state
+#define buttonPin 15          // the number of the pushbutton pin
+bool buttonState = false;     // variable to hold the button state
 bool lastButtonState = false; // variable to hold the last button state
 OneButton btn = OneButton(
-  buttonPin,  // Input pin for the button
-  true,        // Button is active LOW
-  true         // Enable internal pull-up resistor
+    buttonPin, // Input pin for the button
+    true,      // Button is active LOW
+    true       // Enable internal pull-up resistor
 );
 
 #define sliderPin 32
@@ -17,6 +17,10 @@ int StartingVal = 0;
 int TopPos = 0;
 int BottomPos = 0;
 bool slideInitiated = false;
+int previousReading = 0;          // variable to hold the previous reading
+int threshold = 1000;             // threshold value to decide when to trigger a swipe
+unsigned long swipeStartTime = 0; // initialize swipe start time to 0
+unsigned long swipeTimeout = 500; // set a timeout for swipe detection in milliseconds
 
 void PlayPause()
 {
@@ -63,32 +67,12 @@ void loop()
 {
   if (bleKeyboard.isConnected())
   {
-    btn.tick(); // check the status of the button
-    if (analogRead(sliderPin) > 0 && !slideInitiated)
-    {
-      slideInitiated = true;
-      StartingVal = analogRead(sliderPin);
-      TopPos = StartingVal + 1500;
-      BottomPos = StartingVal - 1500;
-      Serial.println("StartingVal: " + String(StartingVal));
-      Serial.println("TopPos: " + String(TopPos));
-      Serial.println("beep boop" + analogRead(sliderPin));
-      if (analogRead(sliderPin) > TopPos){
-        Serial.println("hepl");
-        VolumeUp();
-        StartingVal = 0;
-        TopPos = 0;
-        BottomPos = 0;
-        slideInitiated = false;
-      }
-      if (analogRead(sliderPin) < BottomPos){
-        Serial.println("hepl");
-        VolumeUp();
-        StartingVal = 0;
-        TopPos = 0;
-        BottomPos = 0;
-        slideInitiated = false;
-      }
-    } //wait shut up okay so once it's higher than 0 set the starting position and then set the end position to sometithing plus the starting posution, vice versa for volume down
+    btn.tick();                                             // check the status of the button
+    int softpotReading = analogRead(sliderPin); //current reading
+  if ((softpotReading - previousReading) > threshold) { //if the reading increased by more than the threshold
+    Serial.println("Swipe up detected!");
+  }
+  previousReading = softpotReading; //update previous reading
+  delay(100); //just here to slow down the output for easier reading
   }
 }
