@@ -2,6 +2,10 @@
 	"folders": [
 		{
 			"path": ".."
+		},
+		{
+			"name": "Testing Soft Pot",
+			"path": "../../../Documents/PlatformIO/Projects/Testing Soft Pot"
 		}
 	],
 	"settings": {}

@@ -12,15 +12,15 @@ OneButton btn = OneButton(
     true       // Enable internal pull-up resistor
 );
 
-#define sliderPin 32
+#define sliderPin 33
 int StartingVal = 0;
-int TopPos = 0;
-int BottomPos = 0;
-bool slideInitiated = false;
-int previousReading = 0;          // variable to hold the previous reading
+int EndingVal = 0;    
+int diff = 0;    // variable to hold the previous reading
 int threshold = 1000;             // threshold value to decide when to trigger a swipe
 unsigned long swipeStartTime = 0; // initialize swipe start time to 0
 unsigned long swipeTimeout = 500; // set a timeout for swipe detection in milliseconds
+bool SwipeInitiated = false;      // variable to hold the swipe state
+
 
 void PlayPause()
 {
@@ -52,9 +52,19 @@ void VolumeDown()
   bleKeyboard.write(KEY_MEDIA_VOLUME_DOWN);
 }
 
+int GetSliderDiff()
+{
+  StartingVal = analogRead(sliderPin);
+  delay(500);
+  EndingVal = analogRead(sliderPin);
+  diff = EndingVal - StartingVal;
+  return diff;
+}
+
 
 void setup()
 {
+  delay(2000);
   Serial.begin(115200);
   Serial.println("Starting BLE work!");
   bleKeyboard.begin();
@@ -69,27 +79,31 @@ int previousValue = 0;
 void loop()
 {
   if (bleKeyboard.isConnected())
-  {
+  { //stfu get start value and then wait a few seconds or like half a second and then get the end
     btn.tick();                                             // check the status of the button
-   int softpotValue = analogRead(sliderPin);
-
-  // Calculate the difference from the previous value
-  int diff = softpotValue - previousValue;
-
-  // Check if the difference exceeds the threshold
-  if (diff >= threshold) {
-    // Call the function when the threshold is reached
-    VolumeDown();
-    // Update the previous value
-    previousValue = softpotValue;
+    if (analogRead(sliderPin) > 0)
+    {
+      
+      if (GetSliderDiff() > 500)
+      {
+        Serial.println("Volume Up");
+        Serial.println(diff);
+        Serial.println(EndingVal);
+        Serial.println(StartingVal);
+        StartingVal = 0;
+        EndingVal = 0;
+      }
+      else if (GetSliderDiff() < -500)
+      {
+        Serial.println("Volume Down");
+        Serial.println(diff);
+        Serial.println(EndingVal);
+        Serial.println(StartingVal);
+        StartingVal = 0;
+        EndingVal = 0;
+      }
+    }
   }
-
-  // Print the softpot value for debugging
-  Serial.println(softpotValue);
-
-  // Delay for stability (adjust as needed)
-  delay(100);
-}
 }
 
 
