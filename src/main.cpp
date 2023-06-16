@@ -21,6 +21,7 @@ unsigned long swipeStartTime = 0; // initialize swipe start time to 0
 unsigned long swipeTimeout = 500; // set a timeout for swipe detection in milliseconds
 bool SwipeInitiated = false;      // variable to hold the swipe state
 
+#define reedSwitchPin 26
 
 void PlayPause()
 {
@@ -67,25 +68,35 @@ void setup()
   delay(2000);
   Serial.begin(115200);
   Serial.println("Starting BLE work!");
+  Serial.println("sup bitch");
   bleKeyboard.begin();
   btn.attachClick(PlayPause);
   btn.attachDoubleClick(NextTrack);
   btn.attachLongPressStart(PreviousTrack);
   pinMode(sliderPin, INPUT);
+  pinMode(reedSwitchPin, INPUT_PULLUP);
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_26, 1); //1 = High, 0 = Low
 }
 
 int previousValue = 0;
 
 void loop()
 {
+  if (digitalRead(reedSwitchPin) == LOW)
+  {
+      Serial.println("i sleep ");
+      esp_deep_sleep_start();                // if the button state has changed,
+  }
   if (bleKeyboard.isConnected())
   { //stfu get start value and then wait a few seconds or like half a second and then get the end
     btn.tick();                                             // check the status of the button
+    
+      
     if (analogRead(sliderPin) > 0)
     {
-      
       if (GetSliderDiff() > 500)
       {
+        VolumeUp();
         Serial.println("Volume Up");
         Serial.println(diff);
         Serial.println(EndingVal);
@@ -95,6 +106,7 @@ void loop()
       }
       else if (GetSliderDiff() < -500)
       {
+        VolumeDown();
         Serial.println("Volume Down");
         Serial.println(diff);
         Serial.println(EndingVal);
